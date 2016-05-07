@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+
+	<!-- Alias -->
+	<typeAliases>
+		<typeAlias type="com.test.app.vo.Personal" alias="Personal"/>
+		<typeAlias type="com.test.app.vo.PostNumber" alias="PostNumber"/>
+		<typeAlias type="com.test.app.vo.Company" alias="Company"/>
+		<typeAlias type="com.test.app.vo.Recruiting" alias="Recruiting"/>
+		<typeAlias type="com.test.app.vo.Education" alias="Education"/>
+		<typeAlias type="com.test.app.vo.Career" alias="Career"/>
+		<typeAlias type="com.test.app.vo.Certificate" alias="Certificate"/>
+		<typeAlias type="com.test.app.vo.Award" alias="Award"/>
+		<typeAlias type="com.test.app.vo.Introduce" alias="Introduce"/>
+		<typeAlias type="com.test.app.vo.Scrap" alias="Scrap"/>
+		<typeAlias type="com.test.app.vo.Newsfeed" alias="Newsfeed"/>
+		<typeAlias type="com.test.app.vo.Pinboard" alias="Pinboard"/>
+		<typeAlias type="com.test.app.vo.Apply" alias="Apply"/>
+		<typeAlias type="com.test.app.vo.Reply" alias="Reply"/>
+	</typeAliases>
+	
+	<!-- SQL문 정의한 파일 포함 -->
+	<mappers>
+		<mapper resource="mappers/Member.xml"/>
+	</mappers>
+	
+</configuration>

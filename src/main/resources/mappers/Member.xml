@@ -1,0 +1,679 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ <mapper namespace="com.test.app.persistence.MemberDAO">
+    <!-- 우편번호 검색 -->
+    <select id="selectZipcode" parameterType="string" resultType="PostNumber">
+        SELECT * FROM b1_postnumber
+        WHERE
+        area3 like '%'||#{zipcode}||'%'
+    </select>
+    
+    <!-- 회사번호 검색 -->
+    <select id="selectComnum" parameterType="string" resultType="string">
+       select com_num from b1_comnum
+       where 
+       com_num = #{com_num}
+    </select>
+    
+    <!-- 회원가입_personal -->
+    <insert id="registerPersonal" parameterType="Personal">
+       INSERT INTO b1_personal
+          (
+             per_id,
+             per_pwd,
+             per_name,
+             per_phone,
+             per_email,
+             per_address,
+             per_zipcode
+             <if test="per_originalfile != null">
+            , per_originalfile
+            , per_savedfile 
+         </if>
+          )
+       VALUES(
+             #{per_id},
+             #{per_pwd},
+             #{per_name},
+             #{per_phone},
+             #{per_email},
+             #{per_address},
+             #{per_zipcode}
+             <if test="per_originalfile != null">
+            , #{per_originalfile}
+            , #{per_savedfile} 
+         </if>
+          )
+    </insert> 
+    
+    <!-- Personal 아이디&비번찾기 -->
+    <select id="findPersonId" parameterType="Personal" resultType="String">
+       select per_id
+       from b1_personal
+       where per_name=#{per_name} and per_email=#{per_email}
+    </select>
+    <select id="findPersonPwd" parameterType="Personal" resultType="String">
+       select per_pwd
+       from b1_personal
+       where per_id=#{per_id} and per_name=#{per_name} and per_email=#{per_email}
+    </select>
+    
+    
+    <!-- Company  아이디&비번찾기 -->
+    <select id="findCompanyId" parameterType="Company" resultType="String">
+       select com_id
+       from b1_company
+       where com_name=#{com_name} and com_num=#{com_num}
+    </select>
+    <select id="findCompanyPwd" parameterType="Company" resultType="String">
+       select com_pwd
+       from b1_company
+       where com_id=#{com_id} and com_name=#{com_name} and com_num=#{com_num}
+    </select>
+    
+    <!-- 하나의 Personal정보 불러오기 -->
+    <select id="selectPersonal" parameterType="string" resultType="Personal">
+       select * from b1_personal
+       where per_id = #{per_id}
+    </select>
+    
+    <!-- 학력사항(Education)List불러오기 -->
+    <select id="seletEducation" parameterType="string" resultType="Education">
+       select 
+          per_id,
+          to_char(edu_startdate,'mm/dd/yyyy') as edu_startdate, 
+          to_char(edu_enddate,'mm/dd/yyyy') as edu_enddate, 
+         edu_scname,
+         edu_major,
+         edu_graduation
+       from b1_education
+       where per_id = #{per_id}
+    </select>
+    
+    <!-- 경력사항(Career)List불러오기 -->
+    <select id="selectCareer" parameterType="string" resultType="Career">
+       select 
+          per_id,
+         car_comname,
+          to_char(car_startdate,'mm/dd/yyyy') as car_startdate, 
+          to_char(car_enddate,'mm/dd/yyyy') as car_enddate, 
+          car_department,
+          car_duty
+       from b1_career
+       where per_id = #{per_id}
+    </select>
+    
+    <!-- 자격증&면허증(Certificate)List불러오기 -->
+    <select id="selectCertificate" parameterType="string" resultType="Certificate">
+       select 
+          per_id,
+         cer_cername,
+          to_char(cer_date,'mm/dd/yyyy') as cer_date,
+          cer_grade 
+       from b1_certificate
+       where per_id = #{per_id}
+    </select>
+    
+    <!-- 수상경력(Award)List불러오기 -->
+    <select id="selectAward" parameterType="string" resultType="Award">
+       select 
+          per_id,
+         awa_name,
+          to_char(awa_date,'mm/dd/yyyy') as awa_date,
+          awa_detail
+       from b1_award
+       where per_id = #{per_id}
+    </select>
+    
+    
+    <!-- 학력사항(Education)List 삭제 -->
+    <delete id="deleteEdu" parameterType="string">
+       delete from b1_education 
+       where per_id= #{per_id}
+    </delete>
+    
+    <!-- 경력사항(Career)List 삭제 -->
+    <delete id="deleteCar" parameterType="string">
+       delete from b1_career 
+       where per_id= #{per_id}
+    </delete>
+    
+    <!-- 자격증&면허증(Certificate)List 삭제 -->
+    <delete id="deleteCer" parameterType="string">
+       delete from b1_certificate
+       where per_id= #{per_id}
+    </delete>
+    
+    <!-- 수상경력(Award)List 삭제 -->
+    <delete id="deleteAwa" parameterType="string">
+       delete from b1_award
+       where per_id= #{per_id}
+    </delete>
+    
+    
+    
+    <!-- 이력서 사진 추가하기(personal) -->
+    <update id="insert_PerPhoto" parameterType="Personal">
+       update b1_personal
+       set per_originalfile = #{per_originalfile},
+          per_savedfile = #{per_savedfile}
+       where per_id = #{per_id}
+    </update>
+    
+    <!-- 이력서_학력추가(Education) -->
+    <insert id="insert_Education" parameterType="Education">
+       insert into b1_education 
+       values(
+          #{per_id}, 
+          to_date(#{edu_startdate},'mm/dd/yyyy'),
+          to_date(#{edu_enddate},'mm/dd/yyyy'),
+          #{edu_scname},
+          #{edu_major},
+          #{edu_graduation}
+       )
+    </insert>
+    
+    <!-- 이력서_경력추가(Career) -->
+    <insert id="insert_Career" parameterType="Career">
+       insert into b1_career
+       (
+          per_id,
+          car_comname, 
+          car_startdate,
+          car_enddate
+         <if test="car_department != null">
+            , car_department
+         </if>
+         <if test="car_duty != null">
+            , car_duty
+         </if>   
+       )
+       values(
+          #{per_id},
+          #{car_comname}, 
+          to_date(#{car_startdate},'mm/dd/yyyy'),
+          to_date(#{car_enddate},'mm/dd/yyyy')
+         <if test="car_department != null">
+            , #{car_department}
+         </if>
+         <if test="car_duty != null">
+            , #{car_duty}
+         </if>
+       )
+    </insert>
+    
+    <!-- 이력서_자격증추가(Certificate) -->
+    <insert id="insert_Certificate" parameterType="Certificate">
+       insert into b1_certificate
+       (
+          per_id,
+          cer_cername, 
+          cer_date
+         <if test="cer_grade != null">
+            , cer_grade
+         </if>
+       )
+       values(
+          #{per_id},
+          #{cer_cername}, 
+          to_date(#{cer_date},'mm/dd/yyyy')
+         <if test="cer_grade != null">
+            , #{cer_grade}
+         </if>
+       )
+    </insert>
+    
+    <!-- 이력서_수상경력추가(Award) -->
+    <insert id="insert_Award" parameterType="Award">
+       insert into b1_award
+       (
+          per_id,
+          awa_name 
+         <if test="awa_date != null">
+            , awa_date
+         </if>
+         <if test="awa_detail != null">
+            , awa_detail
+         </if>
+       )
+       values(
+          #{per_id},
+          #{awa_name}
+         <if test="awa_date != null">
+            , to_date(#{awa_date},'mm/dd/yyyy')
+         </if>
+         <if test="awa_detail != null">
+            , #{awa_detail}
+         </if>
+       )
+    </insert>
+    
+    <!-- 자기소개서(Introduce) -->
+    <insert id="insert_Introduce" parameterType="Introduce">
+       insert into b1_introduce 
+       (
+          per_id,
+          intro_title, 
+          intro_contents
+       )
+       values(
+          #{per_id},
+          #{intro_title}, 
+          #{intro_contents}
+       )
+    </insert>
+    
+    <!-- 자기소개서(Introduce) select -->
+    <select id="selectOfIntroduce" parameterType="String" resultType="Introduce">
+       select * from b1_introduce
+       where per_id = #{per_id}
+    </select>
+    
+    <!-- 자기소개서(Introduce) delete -->
+    <delete id="deleteOfIntroduce" parameterType="String">
+       delete from b1_introduce where per_id = #{per_id}
+    </delete>
+    
+    
+    <!-- 회원가입_company -->
+    <insert id="registerCompany" parameterType="Company">
+       INSERT INTO b1_company
+       VALUES(#{com_id},#{com_pwd},#{com_num},#{com_name},#{com_mgrName},
+       #{com_zipcode},#{com_address},#{com_phone},#{com_email})
+    </insert>
+    
+    <!-- login아이디 검색(로그인시 검사) -->
+      <select id="per_login" parameterType="String" resultType="Personal">
+       SELECT * FROM b1_personal
+       WHERE
+       per_id = #{id}
+    </select> 
+    
+    <!-- login아이디 검색(로그인시 검사) -->
+    <select id="com_login" parameterType="String" resultType="Company">
+       SELECT * FROM b1_company
+       WHERE
+       com_id = #{id}
+    </select>
+    
+    <!-- 채용정보 등록  -->
+    <insert id="insertEmployInfo" parameterType="Recruiting">
+       insert into B1_recruiting
+          (
+         com_id,
+         rec_index,
+         rec_duty,
+         rec_requirement,
+         rec_memnum,
+         rec_location,
+         rec_day,
+         rec_department,
+         rec_salary,
+         rec_position,
+         rec_welfare,
+         rec_procedure,
+         rec_docs,
+         rec_submitway,
+         rec_startdate,
+         rec_enddate
+         <if test="rec_originalfile != null">
+            , rec_originalfile
+            , rec_savedfile 
+         </if>
+          )
+       values(
+          #{com_id},
+          rec_index_seq.nextval,
+         #{rec_duty},
+         #{rec_requirement},
+         #{rec_memnum},
+         #{rec_location},
+         #{rec_day},
+         #{rec_department},
+         #{rec_salary},
+         #{rec_position},
+         #{rec_welfare},
+         #{rec_procedure},
+         #{rec_docs},
+         #{rec_submitway},
+         to_date(#{rec_startdate},'mm/dd/yyyy'),
+         to_date(#{rec_enddate},'mm/dd/yyyy')
+         <if test="rec_originalfile != null">
+            , #{rec_originalfile}
+            , #{rec_savedfile} 
+         </if>
+         )   
+    </insert>
+    
+    <!-- 채용정보 list불러오기 -->
+    <select id="selectEmployInfoList" resultType="Recruiting">
+       select    r.*, 
+             (to_date(r.rec_enddate,'yyyy/mm/dd')-to_date(sysdate,'yyyy/mm/dd'))as dday, 
+             c.com_name as com_name 
+      from    B1_recruiting r, B1_company c
+      where    r.com_id = c.com_id
+      and      r.rec_startdate &lt;= sysdate
+      order by (r.rec_enddate-sysdate)
+    </select>
+    
+    <!-- 채용정보 수정하기 -->
+    <update id="updateEmployInfo" parameterType="Recruiting">
+       update b1_recruiting
+       set 
+         rec_duty = #{rec_duty},
+         rec_requirement = #{rec_requirement},
+         rec_memnum = #{rec_memnum},
+         rec_location = #{rec_location},
+         rec_day = #{rec_day},
+         rec_department = #{rec_department},
+         rec_salary = #{rec_salary},
+         rec_position = #{rec_position},
+         rec_welfare = #{rec_welfare},
+         rec_procedure = #{rec_procedure},
+         rec_docs = #{rec_docs},
+         rec_submitway = #{rec_submitway},
+         rec_startdate = to_date(#{rec_startdate},'mm/dd/yyyy'),
+         rec_enddate = to_date(#{rec_enddate},'mm/dd/yyyy')
+          <if test="rec_originalfile != null">
+            , rec_originalfile = #{rec_originalfile}
+            , rec_savedfile = #{rec_savedfile} 
+         </if>
+       where rec_index = #{rec_index}
+    </update>
+    
+    <!-- 채용정보 자세히보기 -->
+    <select id="selectEmployInfoDetail" parameterType="Integer" resultType="Recruiting">
+       select    r.com_id, 
+             r.rec_index,
+             r.rec_duty,
+             r.rec_requirement,
+             r.rec_memnum,
+             r.rec_location,
+             r.rec_day,
+             r.rec_department,
+             r.rec_salary,
+             r.rec_position,
+             r.rec_welfare,
+             r.rec_procedure,
+             r.rec_docs,
+             r.rec_submitway,
+             to_char(r.rec_startdate,'mm/dd/yyyy') as rec_startdate, 
+             to_char(r.rec_enddate,'mm/dd/yyyy') as rec_enddate,
+             r.rec_originalfile,
+             r.rec_savedfile,
+             (to_date(r.rec_enddate,'yyyy/mm/dd')-to_date(sysdate,'yyyy/mm/dd'))as dday, 
+             c.com_name as com_name 
+      from    B1_recruiting r, B1_company c
+      where   r.com_id = c.com_id 
+      and    r.rec_index = #{rec_index}
+    </select>
+    
+    <!-- 회원탈퇴 -->
+    <delete id="per_secede" parameterType="String">
+       delete from b1_personal where per_id= #{loginId}
+    </delete>
+    <delete id="com_secede" parameterType="String">
+       delete from b1_company where com_id= #{loginId}
+    </delete>
+
+    <!-- 아이디/관심기업 테이블에서 관심기업 찾아오기 -->
+    <select id="selectInterestcom" parameterType="String" resultType="String">
+       select per_interestcom from b1_interestcom where per_id = #{per_id} order by per_interestcom
+    </select>
+    
+    <!-- 관심기업 삭제하기 -->
+    <delete id="deleteInterestCom" parameterType="map">
+       delete from b1_interestCom where per_id = #{per_id} and per_interestCom = #{per_interestCom}
+    </delete>
+    
+    <!-- 아이디/관심기업 테이블에 넣기 -->
+    <insert id="insertInterestcom" parameterType="map">
+       insert into b1_interestcom values(#{per_interestcom},#{per_id})
+    </insert>
+    
+     <!-- 자신의 관심기업목록 가져오기 -->
+    <select id="getInterestRec" parameterType="String" resultType="int">
+       select rec_index from b1_interestrecruiting where per_id = #{loginId}
+    </select>
+    
+    <!-- 개인 정보 update -->
+    <update id="updatePerInfo" parameterType="Personal">
+       update b1_personal
+       set 
+         per_pwd = #{per_pwd},
+         per_name = #{per_name},
+         per_phone = #{per_phone},
+         per_email = #{per_email},
+         per_address = #{per_address},
+         per_zipcode = #{per_zipcode},
+         per_emailsetting = #{per_emailsetting}
+       where per_id = #{per_id}
+    </update> 
+    
+    <!-- 기업 정보 select -->
+    <select id="selectCompany" parameterType="String" resultType="Company">
+       select * from b1_company
+       where com_id = #{com_id}       
+    </select>   
+    
+    <!-- 기업 정보 update -->    
+    <update id="updateComInfo" parameterType="Company">
+       update b1_company
+       set 
+         com_pwd = #{com_pwd},
+         com_num = #{com_num},
+         com_name = #{com_name},
+         com_mgrName = #{com_mgrName},
+         com_address = #{com_address},
+         com_zipcode = #{com_zipcode},
+         com_phone = #{com_phone},
+         com_email = #{com_email}
+       where com_id = #{com_id}
+    </update>
+    
+    <!-- 개인관심채용 정보 등록 -->
+    <insert id="insertInterestRec" parameterType="map">
+       insert into b1_interestRecruiting values (#{rec_index}, #{per_id})
+    </insert>
+    
+    <!-- 개인관심채용 정보 삭제 -->
+    <delete id="deleteInterestRec" parameterType="map">
+       delete from b1_interestRecruiting where per_id=#{per_id} and rec_index=#{rec_index}
+    </delete>
+    
+    <!-- 개인관심채용 자세히 보기 -->
+    <select id="getRecruiting" parameterType="int" resultType="Recruiting">
+       select    r.*, 
+             (to_date(r.rec_enddate,'yyyy/mm/dd')-to_date(sysdate,'yyyy/mm/dd'))as dday,
+             (select com_name from b1_company where com_id = (select com_id from b1_recruiting where rec_index = #{rec_index})) as com_name
+             , (select count(*) from b1_applylist where rec_index = #{rec_index}) as apply_num
+      from    B1_recruiting r
+      where    r.rec_index = #{rec_index}
+      order by (r.rec_enddate-sysdate)
+    </select>
+    
+    <!-- 뉴스피드 등록 -->
+    <insert id="insertNewsfeed">
+       <if test="nf_subtitle==null">
+       insert into b1_newsfeed (nf_url, nf_title, nf_date, nf_content, inputdate, per_interestcom) values (#{nf_url},#{nf_title},#{nf_date},#{nf_content},sysdate,#{per_interestcom})
+       </if>
+       <if test="nf_subtitle!=null">
+       insert into b1_newsfeed values(#{nf_url},#{nf_title},#{nf_subtitle}, #{nf_date},#{nf_content},sysdate,#{per_interestcom})
+       </if>
+       
+    </insert>
+    
+    <!-- 뉴스피드 가져오기 -->
+    <select id="selectNewsfeed" parameterType="string" resultType="Newsfeed">
+       select nf_url, nf_title, nf_subtitle, nf_date, nf_content, per_interestcom from b1_newsfeed where per_interestcom = #{per_interestcom} order by inputdate desc
+    </select>
+    
+    <!-- url존재여부 판단을 위해 urlList가져오기 -->
+    <select id="duplicateUrlCount" parameterType="string" resultType="int">
+       select count(nf_url) from b1_newsfeed where nf_url=#{nf_url}
+    </select>
+    
+    <!-- newsfeed하나 가져오기 -->
+    <select id="selectOneNewsfeed" parameterType="String" resultType="Newsfeed">
+       select * from b1_newsfeed where nf_url like #{url}
+    </select>
+    
+    <!-- 스크랩 등록 -->
+    <insert id="insertScrap" parameterType="map">
+       <if test="nf_subtitle==null">
+       insert into b1_scrap (scr_seq, per_id, scr_title, scr_date, scr_content) values(scrap_seq.nextval, #{per_id}, #{nf_title}, #{nf_date},#{nf_content})
+       </if>
+       <if test="nf_subtitle!=null">
+       insert into b1_scrap (scr_seq, per_id, scr_title, scr_subtitle, scr_date, scr_content) values(scrap_seq.nextval, #{per_id}, #{nf_title}, #{nf_subtitle}, #{nf_date},#{nf_content})
+       </if>
+    </insert>
+    
+    <!-- 등록된 스크랩인지 검사 -->
+    <select id="checkScrap" parameterType="map" resultType="String">
+       select scr_title from b1_scrap where scr_title = #{nf_title} and per_id = #{per_id}
+    </select>
+    
+    <!-- 스크랩북-스크랩들 가져오기 -->
+    <select id="selectScrapList" parameterType="String" resultType="Scrap">
+       select * from b1_scrap where per_id = #{per_id}
+    </select>
+    
+    <!-- 스크랩하나 가져오기 -->
+    <select id="selectOneScrap" parameterType="String" resultType="Scrap">
+       select * from b1_scrap where scr_seq = #{scr_seq}
+    </select>
+    
+    <!-- 스크랩 삭제 -->
+    <delete id="deleteScrap" parameterType="int">
+       delete from b1_scrap where scr_seq = #{scr_seq}
+    </delete>
+    
+    <!-- 댓글 입력 -->
+    <insert id="insertReply" parameterType="map">
+       insert into b1_reply (
+       	reply_index,
+       	per_id,
+       	per_name, 
+       	reply_content, 
+       	reply_date, 
+       	scr_title
+       	<if test="per_savedfile != null">
+       	, per_savedfile
+       	</if>
+       	)
+       values (
+       	reply_seq.nextval,
+       	#{per_id}, 
+       	#{per_name}, 
+       	#{reply_content}, 
+       	sysdate, 
+       	#{scr_title}
+       	<if test="per_savedfile != null">
+       	, #{per_savedfile}
+       	</if>
+       	)
+    </insert>
+    
+    <!-- 댓글리스트 불러오기 -->
+    <select id="getReplyList" parameterType="map" resultType="Reply">
+       select * from b1_reply where scr_title = #{scr_title} order by reply_index asc
+    </select>
+    
+    <!-- 댓글 삭제 -->
+    <delete id="deleteReply" parameterType="int">
+       delete from b1_reply where reply_index = #{reply_index}
+    </delete>
+    
+    <!-- 매일 업데이트를 위해 기업리스트 전부 가져오기 -->
+    <select id="selectAllInterestcom" resultType="string">
+       select distinct per_interestcom from b1_interestcom
+    </select>
+    
+    <!-- 메모 등록하기(Personal) -->
+    <select id="insertPinboard" parameterType="Pinboard">
+    	insert into b1_pinboard_per
+    	values(
+    		#{per_id},
+    		pinboard_seq.nextval,
+    		to_date(#{pin_date},'yyyy-mm-dd hh24:mi:ss'),
+			#{pin_title},
+			#{pin_contents}
+    	)
+    </select>
+    
+    <!-- 메모 리스트 가져오기(Personal) -->
+    <select id="getPinboardPer" parameterType="String" resultType="Pinboard">
+    	select * from b1_pinboard_per 
+    	where per_id = #{per_id}
+    	order by pin_date
+    </select>
+    
+    <!-- 메모 삭제하기(Personal) -->
+    <delete id="deletePinboard" parameterType="int">
+    	delete from b1_pinboard_per 
+    	where pin_index= #{pin_index}
+    </delete>
+    
+    
+    <!-- 메모 등록하기(Company) -->
+    <select id="insertPinboard_com" parameterType="Pinboard">
+    	insert into b1_pinboard_com
+    	values(
+    		#{per_id},
+    		pinboard_seq2.nextval,
+    		to_date(#{pin_date},'yyyy-mm-dd hh24:mi:ss'),
+			#{pin_title},
+			#{pin_contents}
+    	)
+    </select>
+    
+    <!-- 메모 리스트 가져오기(Company) -->
+    <select id="getPinboardCom" parameterType="String" resultType="Pinboard">
+    	select * from b1_pinboard_com 
+    	where com_id = #{per_id}
+    	order by pin_date
+    </select>
+    
+    <!-- 메모 삭제하기(Company) -->
+    <delete id="deletePinboard_com" parameterType="int">
+    	delete from b1_pinboard_com 
+    	where pin_index= #{pin_index}
+    </delete>
+    
+    <!-- 개인 회원 전체 리스트  -->
+    <select id="selectPersonalList" resultType="Personal">
+       select * from b1_personal
+    </select>
+    
+    <!-- 지원 등록(Apply) -->
+    <insert id="registerApply" parameterType="Apply">
+       insert into b1_applylist values (#{rec_index}, #{per_id})
+    </insert>
+    
+    <!-- 지원현황리스트(ApplyStatus) -->
+    <select id="getApplyStatusList" parameterType="String" resultType="Apply">
+    	select r.com_id, r.rec_index, r.rec_duty, a.per_id, p.per_name, p.per_savedfile
+		from B1_RECRUITING r, B1_APPLYLIST a, B1_PERSONAL p
+		where r.rec_index = a.rec_index
+		and a.per_id = p.per_id
+		and r.com_id = #{com_id}
+    </select>
+    
+    <!-- 기업이름 가져오기 -->
+     <select id="getcomnameList" resultType="String">
+       select * from b1_comnameList
+    </select>
+    
+    <!-- 지원 중복 막기 -->
+    <select id="getApplyListByPer" parameterType="String" resultType="Apply">
+       select * from b1_applylist
+       where per_id = #{per_id}
+    </select>
+    
+    <!-- dartcode가져오기 -->
+    <select id="selectDartCode" parameterType="String" resultType="String">
+       select dartcode from b1_comnamelist where comname=#{comname}
+    </select>
+ </mapper>
